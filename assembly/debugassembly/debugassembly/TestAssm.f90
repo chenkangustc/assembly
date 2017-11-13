@@ -1,8 +1,3 @@
-!  debugassembly.f90 
-!
-!  FUNCTIONS:
-!  debugassembly - Entry point of console application.
-!
 
 !****************************************************************************
 !
