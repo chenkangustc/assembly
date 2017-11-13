@@ -1,6 +1,6 @@
 module assm_global
-    use sys_assembly_header
+    use sys_re_input_header
     implicit none
-    type(sys_assmebly)::assm1
-    call assm1%set()
+    type(sys_re_input)::indata
+    call indata%set()
 end module assm_global
