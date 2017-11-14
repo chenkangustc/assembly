@@ -29,7 +29,7 @@ module sys_assm_header
        real pin
        real pout
        contains
-       procedure,public::set=>set_Assmboundary
+       procedure,public::init=>init_Assmboundary
        !procedure,public::init=>init_Assmboundary !设置出口的边界条件
     end type Assmboundary
     
@@ -49,12 +49,26 @@ module sys_assm_header
         real,allocatable::velocity(:)
       contains
        procedure,public::init=>init_AssmThermal
-    end type AssmThermal
+      end type AssmThermal
+      
+    type,public::AssmInit
+      real Ti!初始温度
+      real Pi!初始压力
+      real Ui!初始速度
+      real Tin
+      real Pin
+      real Uin
+    contains
+      procedure,public::set=>set_assminit
+    end type AssmInit
+    
      private::set_assmgeom
      private::set_assmmesh
-     private::set_Assmboundary
+     private::set_assminit
+     private::init_Assmboundary!会随时间变化的量用init
      private::init_AssmMaterial
      private::init_AssmThermal
+     
     contains
      subroutine set_assmgeom(this,rFuel,GasGap,ShellThick,AssmShellThick,AcrossFlat,Height,n_pin)
        implicit none
@@ -88,7 +102,7 @@ module sys_assm_header
         this%ny=ny     
      end subroutine set_assmmesh
      
-     subroutine set_assmboundary(this,Tin,uin,pin)
+     subroutine init_Assmboundary(this,Tin,uin,pin)
        implicit none
        class(assmboundary),intent(in out)::this
        real,intent(in)::Tin
@@ -97,7 +111,7 @@ module sys_assm_header
        this%Tin=Tin
        this%uin=uin
        this%pin=pin
-     end subroutine set_assmboundary
+     end subroutine init_Assmboundary
      
      !subroutine init_AssmMaterial(this,LBE,he,T91)  
      subroutine init_AssmMaterial(this,Nf,Ng,Ns,Ny)
@@ -152,4 +166,21 @@ module sys_assm_header
         this%Pressure=Pressure
         this%Velocity=Velocity
      end subroutine init_AssmThermal
+     
+     subroutine set_AssmInit(this,Ti,Pi,Ui,Tin,Pin,Uin)
+        implicit none
+        class(AssmInit),intent(in out)::this
+        real,intent(in)::Ti
+        real,intent(in)::Pi
+        real,intent(in)::Ui
+        real,intent(in)::Tin
+        real,intent(in)::Pin
+        real,intent(in)::Uin
+        this%Ti=Ti
+        this%Pi=Pi
+        this%Ui=Ui
+        this%Tin=Tin
+        this%Pin=Pin
+        this%Uin=Uin
+     end subroutine set_AssmInit
 end module sys_assm_header

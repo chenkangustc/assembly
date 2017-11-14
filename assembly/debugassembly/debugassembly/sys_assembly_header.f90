@@ -9,7 +9,8 @@ module sys_assembly_header
       type(AssmMesh)::mesh !Assm_mesh
       type(AssmMaterial)::property !Assm_material 热物性和水力学参数
       type(AssmBoundary)::boundary !Assm_boundary
-      real::power(:,:) !Assm_power(zone,layer)
+      type(AssmInit)::initdata
+      real,allocatable::power(:,:) !Assm_power(zone,layer)
       type(AssmThermal)::Thermal  !pvt
     contains
       procedure,public::alloc=>alloc_assembly
@@ -20,7 +21,7 @@ module sys_assembly_header
       !procedure,public::Transient=>cal_Assembly_Transient
     end type sys_assembly
      private::alloc_assembly
-     private::clean_assembly
+     private::free_assembly
      private::set_assembly
      private::init_assembly
 !     private::cal_Assembly_Steady
@@ -32,7 +33,11 @@ module sys_assembly_header
       !热物性初始化
       call this%property%init(this%mesh%Nf,this%mesh%Ng,this%mesh%Ns,this%mesh%Ny)
       !热工参数初始化
-      call this%Thermal%init(reInputdata%Ti,reInputdata%Pi,reInputdata%ui)
+      call this%Thermal%init(this%initdata%Ti,this%initdata%Pi,this%initdata%ui)
+      !边界条件初始化
+      call this%boundary%init(this%initdata%Tin,this%initdata%uin,this%initdata%pin) 
+      !热源初始化
+      this%power=0.0
      endsubroutine init_assembly
     
      subroutine alloc_assembly(this)
@@ -40,8 +45,9 @@ module sys_assembly_header
       class(sys_assembly),intent(in out)::this
       !local
       integer::i_allocate
-      integer::M,N
-      M=this%mesh%Ny+1
+      integer::M,N,Ny
+      Ny=this%mesh%Ny
+      M=Ny+1
       N=this%mesh%Nf+this%mesh%Ng+this%mesh%Ns+1
       !check allocated first
       call this%clean()
@@ -52,8 +58,10 @@ module sys_assembly_header
       allocate(this%property%htc(0:M))
       
       allocate(this%thermal%Temperature(0:M,0:N))
-      allocate(this%thermal%Pressure(1:this%mesh%Ny))
-      allocate(this%thermal%Velocity(1:this%mesh%Ny-1))
+      allocate(this%thermal%Pressure(1:Ny))
+      allocate(this%thermal%Velocity(1:Ny-1))
+      
+      allocate(this%power(1:Ny,1:N))
      end subroutine alloc_assembly
      
      subroutine Free_assembly(this)
@@ -67,13 +75,20 @@ module sys_assembly_header
       if(allocated(this%thermal%temperature))  deallocate(this%thermal%temperature)
       if(allocated(this%thermal%pressure))  deallocate(this%thermal%pressure)
       if(allocated(this%thermal%Velocity))  deallocate(this%thermal%Velocity)
+      
+      if(allocated(this%power))  deallocate(this%power)
      end subroutine Free_assembly
      
-     subroutine set_assembly(this)
+     subroutine set_assembly(this,reInputdata)
       implicit none
       class(sys_assembly),intent(in out)::this
+      type(sys_re_input),intent(in)::reInputdata
+      !设置几何参数
       call this%geom%set(reInputdata%xf,reInputdata%xg,reInputdata%xs,reInputdata%xos,reInputdata%acf,reInputdata%Height,reInputdata%npin)
+      !设置网格参数
       call this%mesh%set(reInputdata%nf,reInputdata%ng,reInputdata%ns,reInputdata%ny)
+      !设置初始值
+      call this%initdata%set(reInputdata%Ti,reInputdata%Pi,reInputdata%Ui,reInputdata%Tin,reInputdata%Pin,reInputdata%Uin)
       this%fric=reInputdata%f
      end subroutine set_assembly
 end module sys_assembly_header
