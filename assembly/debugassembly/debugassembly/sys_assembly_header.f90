@@ -3,15 +3,18 @@ module sys_assembly_header
     use sys_re_input_global
     implicit none
     type,public::sys_assembly!描述一个组件的特征和使用方法
-      private
+      !private
       real::fric  !摩擦因子
       type(AssmGeom)::geom !assm_geom
       type(AssmMesh)::mesh !Assm_mesh
-      type(AssmMaterial)::property !Assm_material 热物性和水力学参数
-      type(AssmBoundary)::boundary !Assm_boundary
+      type(material)::property !Assm_material 热物性和水力学参数
+      type(boundary)::boundary !Assm_boundary
       type(AssmInit)::initdata
-      real,allocatable::power(:,:) !Assm_power(zone,layer)
-      type(AssmThermal)::Thermal  !pvt
+      type(confactor)::confactor_
+      type(assmpow)::pow
+      !real,allocatable::power(:,:) !Assm_power(zone,layer)
+      !real,allocatable::fq_core(:,:)
+      type(thermal)::Thermal  !pvt
     contains
       procedure,public::alloc=>alloc_assembly
       procedure,public::clean=>free_assembly
@@ -37,7 +40,8 @@ module sys_assembly_header
       !边界条件初始化
       call this%boundary%init(this%initdata%Tin,this%initdata%uin,this%initdata%pin) 
       !热源初始化
-      this%power=0.0
+      this%pow%power=0.0
+      this%pow%fq_core=0.0
      endsubroutine init_assembly
     
      subroutine alloc_assembly(this)
@@ -55,13 +59,15 @@ module sys_assembly_header
       allocate(this%property%rho(0:M,0:N))
       allocate(this%property%shc(0:M,0:N))
       allocate(this%property%ctc(0:M,0:N))
+	  allocate(this%property%dvs(0:M,0:N))
       allocate(this%property%htc(0:M))
       
       allocate(this%thermal%Temperature(0:M,0:N))
       allocate(this%thermal%Pressure(1:Ny))
       allocate(this%thermal%Velocity(1:Ny-1))
       
-      allocate(this%power(1:Ny,1:N))
+      allocate(this%pow%power(1:Ny))
+      allocate(this%pow%fq_core(1:Ny))
      end subroutine alloc_assembly
      
      subroutine Free_assembly(this)
@@ -76,7 +82,8 @@ module sys_assembly_header
       if(allocated(this%thermal%pressure))  deallocate(this%thermal%pressure)
       if(allocated(this%thermal%Velocity))  deallocate(this%thermal%Velocity)
       
-      if(allocated(this%power))  deallocate(this%power)
+      if(allocated(this%pow%power))  deallocate(this%pow%power)
+      if(allocated(this%pow%fq_core))  deallocate(this%pow%fq_core)
      end subroutine Free_assembly
      
      subroutine set_assembly(this,reInputdata)
@@ -89,6 +96,10 @@ module sys_assembly_header
       call this%mesh%set(reInputdata%nf,reInputdata%ng,reInputdata%ns,reInputdata%ny)
       !设置初始值
       call this%initdata%set(reInputdata%Ti,reInputdata%Pi,reInputdata%Ui,reInputdata%Tin,reInputdata%Pin,reInputdata%Uin)
+      !设置收敛因子
+      call this%confactor_%set(reInputdata%alpha,reInputdata%sigma)
       this%fric=reInputdata%f
      end subroutine set_assembly
+     
+
 end module sys_assembly_header

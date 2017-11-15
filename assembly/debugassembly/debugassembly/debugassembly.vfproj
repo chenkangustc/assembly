@@ -31,8 +31,14 @@
 		<Filter Name="input">
 		<File RelativePath=".\sys_re_input_global.f90"/>
 		<File RelativePath=".\sys_re_input_header.f90"/></Filter>
+		<Filter Name="driving">
+		<File RelativePath=".\driving_cal_transient.f90"/>
+		<File RelativePath=".\driving_output.f90"/>
+		<File RelativePath=".\driving_pre_process.f90"/></Filter>
+		<Filter Name="mathkerel">
+		<File RelativePath=".\mathkerel.f90"/></Filter>
 		<File RelativePath=".\assm_global.f90"/>
 		<File RelativePath=".\sys_assembly_header.f90"/>
-		<File RelativePath=".\TestAssm.f90"/></Filter>
+		<File RelativePath=".\ASSEMBLY.f90"/></Filter>
 		<File RelativePath=".\ReadMe.txt"/></Files>
 	<Globals/></VisualStudioProject>

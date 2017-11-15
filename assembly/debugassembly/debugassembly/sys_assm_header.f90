@@ -21,7 +21,7 @@ module sys_assm_header
       procedure,public::set=>set_assmmesh
     end type Assmmesh
     
-    type,public::Assmboundary
+    type,public::boundary
        real Tin
        real Tout
        real uin
@@ -29,27 +29,27 @@ module sys_assm_header
        real pin
        real pout
        contains
-       procedure,public::init=>init_Assmboundary
-       !procedure,public::init=>init_Assmboundary !设置出口的边界条件
-    end type Assmboundary
+       procedure,public::init=>init_boundary
+       !procedure,public::init=>init_boundary !设置出口的边界条件
+    end type boundary
     
-    type,public::AssmMaterial!热物性和水力学参数
+    type,public::material!热物性和水力学参数
         real,allocatable::rho(:,:)!热物性
         real,allocatable::shc(:,:)
         real,allocatable::ctc(:,:)
         real,allocatable::dvs(:,:)
         real,allocatable::htc(:)
      contains
-       procedure,public::init=>init_AssmMaterial
-    end type AssmMaterial
+       procedure,public::init=>init_material
+    end type material
      
-    type,public::AssmThermal!                
+    type,public::thermal!                
         real,allocatable::Temperature(:,:) !pvt
         real,allocatable::pressure(:)
         real,allocatable::velocity(:)
       contains
-       procedure,public::init=>init_AssmThermal
-      end type AssmThermal
+       procedure,public::init=>init_thermal
+      end type thermal
       
     type,public::AssmInit
       real Ti!初始温度
@@ -62,12 +62,32 @@ module sys_assm_header
       procedure,public::set=>set_assminit
     end type AssmInit
     
+    type,public::confactor
+      real alpha!初始温度
+      real sigma!初始压力
+    contains
+      procedure,public::set=>set_confactor
+    end type confactor
+    
+    type,public::assmpow
+        real,allocatable::power(:)
+        real,allocatable::fq_core(:)
+    end type
+        
+    type,public::sys_time
+        type(boundary)::boundary
+        type(thermal)::thermal
+        type(material)::material
+        type(assmpow)::power
+    end type sys_time
+    
      private::set_assmgeom
      private::set_assmmesh
      private::set_assminit
-     private::init_Assmboundary!会随时间变化的量用init
-     private::init_AssmMaterial
-     private::init_AssmThermal
+     private::set_confactor
+     private::init_boundary!会随时间变化的量用init
+     private::init_material
+     private::init_thermal
      
     contains
      subroutine set_assmgeom(this,rFuel,GasGap,ShellThick,AssmShellThick,AcrossFlat,Height,n_pin)
@@ -102,21 +122,21 @@ module sys_assm_header
         this%ny=ny     
      end subroutine set_assmmesh
      
-     subroutine init_Assmboundary(this,Tin,uin,pin)
+     subroutine init_boundary(this,Tin,uin,pin)
        implicit none
-       class(assmboundary),intent(in out)::this
+       class(boundary),intent(in out)::this
        real,intent(in)::Tin
        real,intent(in)::uin
        real,intent(in)::pin
        this%Tin=Tin
        this%uin=uin
        this%pin=pin
-     end subroutine init_Assmboundary
+     end subroutine init_boundary
      
-     !subroutine init_AssmMaterial(this,LBE,he,T91)  
-     subroutine init_AssmMaterial(this,Nf,Ng,Ns,Ny)
+     !subroutine init_material(this,LBE,he,T91)  
+     subroutine init_material(this,Nf,Ng,Ns,Ny)
        implicit none
-       class(AssmMaterial),intent(in out)::this
+       class(material),intent(in out)::this
        integer,intent(in)::Nf
        integer,intent(in)::Ng
        integer,intent(in)::Ns
@@ -154,18 +174,18 @@ module sys_assm_header
                  endif                 
              enddo
          enddo    
-     end subroutine init_AssmMaterial
+     end subroutine init_material
      
-     subroutine init_AssmThermal(this,Temperature,Pressure,Velocity)
+     subroutine init_thermal(this,Temperature,Pressure,Velocity)
         implicit none
-        class(AssmThermal),intent(in out)::this
+        class(thermal),intent(in out)::this
         real,intent(in)::Temperature
         real,intent(in)::Pressure
         real,intent(in)::Velocity
         this%Temperature=Temperature
         this%Pressure=Pressure
         this%Velocity=Velocity
-     end subroutine init_AssmThermal
+     end subroutine init_thermal
      
      subroutine set_AssmInit(this,Ti,Pi,Ui,Tin,Pin,Uin)
         implicit none
@@ -183,4 +203,14 @@ module sys_assm_header
         this%Pin=Pin
         this%Uin=Uin
      end subroutine set_AssmInit
+     
+     subroutine set_confactor(this,alpha,sigma)
+        implicit none
+        class(confactor),intent(in out)::this
+        real,intent(in)::alpha
+        real,intent(in)::sigma
+        this%alpha=alpha
+        this%sigma=sigma
+     end subroutine set_confactor
+     
 end module sys_assm_header

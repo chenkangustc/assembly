@@ -3,9 +3,10 @@ module sys_re_input_header
     type,public::sys_re_input
        !public
        integer nf,ng,ns,ny,npin
-       real xf,xg,xs,xos,acf,height,f,pout,flowin,sigma,sigmab,alpha
+       real xf,xg,xs,xos,acf,height,f,pout,flowin
        real Tin,uin,pin
        real Ti,ui,pi
+       real alpha,sigma
     contains
      procedure,public::set=>set_inputdata
     end type sys_re_input
@@ -16,7 +17,7 @@ module sys_re_input_header
       class(sys_re_input)::this
        open(unit=1,file='E:\documents\doctors degree\software\tansistant\parallel\moduledebug\assembly\debugassembly\re_input.txt')
        !read(1,*) xf,xg,xs,height,nf,ng,ns,ny,f,Tin,pout,Tic,uic,tmax,nt,sigma,sigmab,alpha
-       read(1,*) this%xf,this%xg,this%xs,this%xos,this%acf,this%height,this%npin,this%nf,this%ng,this%ns,this%ny,this%f,this%Tin,this%pout,this%flowin,this%sigma,this%sigmab,this%alpha,this%Ti,this%ui,this%pi,this%uin,this%pin
+       read(1,*) this%xf,this%xg,this%xs,this%xos,this%acf,this%height,this%npin,this%nf,this%ng,this%ns,this%ny,this%f,this%Tin,this%pout,this%flowin,this%Ti,this%ui,this%pi,this%uin,this%pin,this%alpha,this%sigma
        close(1)
      end subroutine set_inputdata
 end module sys_re_input_header
