@@ -8,7 +8,7 @@ module sys_assembly_header
       type(AssmGeom)::geom !assm_geom
       type(AssmMesh)::mesh !Assm_mesh
       type(material)::property !Assm_material 热物性和水力学参数
-      type(boundary)::boundary !Assm_boundary
+      type(th_boundary)::th_boundary !Assm_th_boundary
       type(AssmInit)::initdata
       type(confactor)::confactor_
       type(assmpow)::pow
@@ -38,7 +38,7 @@ module sys_assembly_header
       !热工参数初始化
       call this%Thermal%init(this%initdata%Ti,this%initdata%Pi,this%initdata%ui)
       !边界条件初始化
-      call this%boundary%init(this%initdata%Tin,this%initdata%uin,this%initdata%pin) 
+      call this%th_boundary%init(this%initdata%Tin,this%initdata%uin,this%initdata%pin) 
       !热源初始化
       this%pow%power=0.0
       this%pow%fq_core=0.0

@@ -19,19 +19,22 @@ module sys_assm_header
         integer ny
       contains
       procedure,public::set=>set_assmmesh
-    end type Assmmesh
+      end type Assmmesh
     
     type,public::boundary
-       real Tin
-       real Tout
-       real uin
-       real uout
-       real pin
-       real pout
-       contains
-       procedure,public::init=>init_boundary
-       !procedure,public::init=>init_boundary !设置出口的边界条件
+        real inlet
+        real outlet
     end type boundary
+     
+      
+    type,public::th_boundary
+       type(boundary)::p
+       type(boundary)::u
+       type(boundary)::T
+       contains
+       procedure,public::init=>init_th_boundary
+       !procedure,public::init=>init_th_boundary !设置出口的边界条件
+    end type th_boundary
     
     type,public::material!热物性和水力学参数
         real,allocatable::rho(:,:)!热物性
@@ -75,7 +78,7 @@ module sys_assm_header
     end type
         
     type,public::sys_time
-        type(boundary)::boundary
+        type(th_boundary)::th_boundary
         type(thermal)::thermal
         type(material)::material
         type(assmpow)::power
@@ -85,7 +88,7 @@ module sys_assm_header
      private::set_assmmesh
      private::set_assminit
      private::set_confactor
-     private::init_boundary!会随时间变化的量用init
+     private::init_th_boundary!会随时间变化的量用init
      private::init_material
      private::init_thermal
      
@@ -122,16 +125,16 @@ module sys_assm_header
         this%ny=ny     
      end subroutine set_assmmesh
      
-     subroutine init_boundary(this,Tin,uin,pin)
+     subroutine init_th_boundary(this,Tin,uin,pin)
        implicit none
-       class(boundary),intent(in out)::this
+       class(th_boundary),intent(in out)::this
        real,intent(in)::Tin
        real,intent(in)::uin
        real,intent(in)::pin
-       this%Tin=Tin
-       this%uin=uin
-       this%pin=pin
-     end subroutine init_boundary
+       this%T%inlet=Tin
+       this%u%inlet=uin
+       this%p%inlet=pin
+     end subroutine init_th_boundary
      
      !subroutine init_material(this,LBE,he,T91)  
      subroutine init_material(this,Nf,Ng,Ns,Ny)

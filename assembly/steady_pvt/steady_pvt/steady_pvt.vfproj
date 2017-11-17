@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<VisualStudioProject ProjectCreator="Intel Fortran" Keyword="Console Application" Version="11.0" ProjectIdGuid="{77ECCBFB-AE2D-465A-9713-D27E5C66A5B5}">
+<VisualStudioProject ProjectCreator="Intel Fortran" Keyword="Console Application" Version="11.0" ProjectIdGuid="{4358508F-DEF8-4194-8FE2-188680FB1D04}">
 	<Platforms>
 		<Platform Name="Win32"/></Platforms>
 	<Configurations>
@@ -24,21 +24,9 @@
 				<Tool Name="VFPostBuildEventTool"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration></Configurations>
 	<Files>
-		<Filter Name="Header Files" Filter="fi;fd">
-		<File RelativePath=".\sys_assm_header.f90"/></Filter>
+		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
-		<Filter Name="driving">
-		<File RelativePath=".\driving_cal_transient.f90"/>
-		<File RelativePath=".\driving_output.f90"/>
-		<File RelativePath=".\driving_pre_process.f90"/></Filter>
-		<Filter Name="input">
-		<File RelativePath=".\sys_re_input_global.f90"/>
-		<File RelativePath=".\sys_re_input_header.f90"/></Filter>
-		<Filter Name="mathkerel">
-		<File RelativePath=".\mathkerel.f90"/></Filter>
-		<File RelativePath=".\ASSEMBLY.f90"/>
-		<File RelativePath=".\assm_global.f90"/>
-		<File RelativePath=".\sys_assembly_header.f90"/></Filter>
+		<File RelativePath=".\steady_pvt.f90"/></Filter>
 		<File RelativePath=".\ReadMe.txt"/></Files>
 	<Globals/></VisualStudioProject>
