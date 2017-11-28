@@ -1,10 +1,12 @@
 module sys_assembly_header
     use sys_assm_header
     use sys_re_input_global
+    
     implicit none
     type,public::sys_assembly!描述一个组件的特征和使用方法
       !private
-      real::fric  !摩擦因子
+      !real::fric  !摩擦因子
+      type(hydraulic)::hydrau
       type(AssmGeom)::geom !assm_geom
       type(AssmMesh)::mesh !Assm_mesh
       type(material)::property !Assm_material 热物性和水力学参数
@@ -20,6 +22,7 @@ module sys_assembly_header
       procedure,public::clean=>free_assembly
       procedure,public::set=>set_assembly!输入卡输入
       procedure,public::init=>init_assembly
+      procedure,public::grid=>cal_grid
       !procedure,public::Steady=>cal_Assembly_Steady
       !procedure,public::Transient=>cal_Assembly_Transient
     end type sys_assembly
@@ -42,6 +45,8 @@ module sys_assembly_header
       !热源初始化
       this%pow%power=0.0
       this%pow%fq_core=0.0
+      !网格
+      call this%grid()
      endsubroutine init_assembly
     
      subroutine alloc_assembly(this)
@@ -56,18 +61,21 @@ module sys_assembly_header
       !check allocated first
       call this%clean()
       
-      allocate(this%property%rho(0:M,0:N))
+      allocate(this%property%rho(0:M,0:N))!(1:M,1:N)
       allocate(this%property%shc(0:M,0:N))
       allocate(this%property%ctc(0:M,0:N))
 	  allocate(this%property%dvs(0:M,0:N))
       allocate(this%property%htc(0:M))
       
-      allocate(this%thermal%Temperature(0:M,0:N))
-      allocate(this%thermal%Pressure(1:Ny))
-      allocate(this%thermal%Velocity(1:Ny-1))
+      allocate(this%thermal%Temperature(M,N))
+      allocate(this%thermal%Pressure(M))
+      allocate(this%thermal%Velocity(Ny-1))
       
-      allocate(this%pow%power(1:Ny))
-      allocate(this%pow%fq_core(1:Ny))
+      allocate(this%mesh%r(0:M,0:N))
+      allocate(this%mesh%z(0:M,0:N))
+      
+      allocate(this%pow%power(M))
+      allocate(this%pow%fq_core(M))
      end subroutine alloc_assembly
      
      subroutine Free_assembly(this)
@@ -81,6 +89,9 @@ module sys_assembly_header
       if(allocated(this%thermal%temperature))  deallocate(this%thermal%temperature)
       if(allocated(this%thermal%pressure))  deallocate(this%thermal%pressure)
       if(allocated(this%thermal%Velocity))  deallocate(this%thermal%Velocity)
+      
+      if(allocated(this%mesh%r))  deallocate(this%mesh%r)
+      if(allocated(this%mesh%z))  deallocate(this%mesh%z)
       
       if(allocated(this%pow%power))  deallocate(this%pow%power)
       if(allocated(this%pow%fq_core))  deallocate(this%pow%fq_core)
@@ -98,8 +109,54 @@ module sys_assembly_header
       call this%initdata%set(reInputdata%Ti,reInputdata%Pi,reInputdata%Ui,reInputdata%Tin,reInputdata%Pin,reInputdata%Uin)
       !设置收敛因子
       call this%confactor_%set(reInputdata%alpha,reInputdata%sigma)
-      this%fric=reInputdata%f
+      call this%hydrau%set(reInputdata%f)
      end subroutine set_assembly
      
-
+     subroutine cal_grid(this)
+       implicit none
+       class(sys_assembly),intent(in out)::this
+       !local
+       real Df,Dg,Ds,Dy 
+       integer  M,N,i,j
+     
+     Df=this%geom%rFuel/this%mesh%Nf
+     Dg=this%geom%GasGap/this%mesh%Ng
+     Ds=this%geom%ShellThick/this%mesh%Ns
+     Dy=this%geom%Height/this%mesh%Ny
+     M=this%mesh%Ny+1
+     N=this%mesh%Nf+this%mesh%Ng+this%mesh%Ns+1
+     
+     Do i=0,M,1
+         do j=0,N,1
+            if (j==0)then
+               this%mesh%r(i,j)=0.0
+            elseif(j==1)then
+               this%mesh%r(i,j)=Df/2.0
+            elseif(j>1.and.j<=this%mesh%Nf) then
+               this%mesh%r(i,j)=this%mesh%r(i,j-1)+Df
+            elseif(j==this%mesh%Nf+1)then
+               this%mesh%r(i,j)=this%mesh%r(i,j-1)+Df/2.0+Dg/2.0
+            elseif (j>this%mesh%Nf+1.and.j<=this%mesh%Nf+this%mesh%Ng) then
+               this%mesh%r(i,j)=this%mesh%r(i,j-1)+Dg
+            elseif (j==this%mesh%Nf+this%mesh%Ng+1)then
+               this%mesh%r(i,j)=this%mesh%r(i,j-1)+ Dg/2.0+Ds/2.0
+            elseif (j>this%mesh%Nf+this%mesh%Ng+1.and.j<=this%mesh%Nf+this%mesh%Ng+this%mesh%Ns)then
+               this%mesh%r(i,j)=this%mesh%r(i,j-1)+Ds
+            else!流体的径向坐标，没有实际意义
+               this%mesh%r(i,j)=this%mesh%r(i,j-1)+Ds
+            endif
+            
+            if(i==0)then
+              this%mesh%z(i,j)=0.0
+            elseif (i==1)then
+              this%mesh%z(i,j)=Dy/2.0
+            elseif (i>1.and.i<M)then
+              this%mesh%z(i,j)=this%mesh%z(i-1,j)+Dy
+            elseif (i==M)then
+              this%mesh%z(i,j)=this%mesh%z(i-1,j)+Dy/2.0
+            endif
+         enddo
+      enddo   
+     end subroutine cal_grid
+     
 end module sys_assembly_header

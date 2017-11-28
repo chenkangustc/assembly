@@ -1,4 +1,6 @@
 module sys_assm_header
+    use mathkerel
+    use sys_property
     implicit none
     type,public::AssmGeom
       real rFuel          !元件半径
@@ -11,12 +13,14 @@ module sys_assm_header
     contains
       procedure,public::set=>set_assmgeom
     end type AssmGeom
-
+    
     type,public::Assmmesh
         integer nf
         integer ng
         integer ns
         integer ny
+        real,allocatable::r(:,:)
+        real,allocatable::z(:,:)
       contains
       procedure,public::set=>set_assmmesh
       end type Assmmesh
@@ -25,17 +29,34 @@ module sys_assm_header
         real inlet
         real outlet
     end type boundary
-     
+    
+    type,public::iteration
+        real,allocatable::Temperature(:,:) !pvt
+        real,allocatable::pressure(:)
+        real,allocatable::velocity(:)
+    end type iteration
       
     type,public::th_boundary
        type(boundary)::p
        type(boundary)::u
        type(boundary)::T
+       !type(boundary)::rho
        contains
        procedure,public::init=>init_th_boundary
        !procedure,public::init=>init_th_boundary !设置出口的边界条件
     end type th_boundary
     
+    type,public::hydraulic
+        real fric
+        real aflow
+        real wet
+        real de
+    contains
+        procedure,public::set=>set_hydraulic
+        procedure,public::cal=>cal_hydraulic
+    end type hydraulic
+    
+        
     type,public::material!热物性和水力学参数
         real,allocatable::rho(:,:)!热物性
         real,allocatable::shc(:,:)
@@ -88,10 +109,12 @@ module sys_assm_header
      private::set_assmmesh
      private::set_assminit
      private::set_confactor
+     private::set_hydraulic
      private::init_th_boundary!会随时间变化的量用init
      private::init_material
      private::init_thermal
-     
+     private::cal_hydraulic
+     !private::cal_grid
     contains
      subroutine set_assmgeom(this,rFuel,GasGap,ShellThick,AssmShellThick,AcrossFlat,Height,n_pin)
        implicit none
@@ -134,6 +157,7 @@ module sys_assm_header
        this%T%inlet=Tin
        this%u%inlet=uin
        this%p%inlet=pin
+       !this%rho%inlet=get_density(Tin)
      end subroutine init_th_boundary
      
      !subroutine init_material(this,LBE,he,T91)  
@@ -215,5 +239,19 @@ module sys_assm_header
         this%alpha=alpha
         this%sigma=sigma
      end subroutine set_confactor
+ 
+     subroutine set_hydraulic(this,fric)
+        implicit none
+        class(hydraulic),intent(in out)::this
+        real,intent(in)::fric
+        this%fric=fric
+     end subroutine set_hydraulic
+     
+     subroutine cal_hydraulic(this,rc,pd)
+        implicit none
+        class(hydraulic),intent(in out)::this
+        real,intent(in)::rc,pd
+        call get_hyconstant(rc,pd,this%Aflow,this%wet,this%de)
+     end subroutine cal_hydraulic
      
 end module sys_assm_header
