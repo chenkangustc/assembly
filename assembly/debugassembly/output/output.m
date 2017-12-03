@@ -31,6 +31,6 @@ tuin=fscanf(ftuin,'%f',[1,inf]);
 fclose(ftuin);
 Nt=length(ctime)
 y=1:1:Nt
-subplot(2,2,1);plot(y,tpow),title('功率随时间分布'),xlabel('时间'),ylabel('功率')
-subplot(2,2,2);plot(y,tuin),title('入口流速随时间分布'),xlabel('时间'),ylabel('入口流速')
-subplot(2,2,3);plot(y,tout),title('堆芯出口温度随时间分布'),xlabel('时间'),ylabel('堆芯出口温度')
+subplot(2,2,1);plot(y,tpow),title('功率密度随时间分布'),xlabel('时间s'),ylabel('功率密度W/m3')
+subplot(2,2,2);plot(y,tuin),title('入口流速随时间分布'),xlabel('时间s'),ylabel('入口流速m/s')
+subplot(2,2,3);plot(y,tout),title('堆芯出口温度随时间分布'),xlabel('时间s'),ylabel('堆芯出口温度K')
