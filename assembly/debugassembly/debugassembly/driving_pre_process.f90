@@ -12,10 +12,13 @@ contains
      !call reInputdata%publish()
      !参数赋值
      call assm1%set(reInputdata)
-     !call assm1%geom%print()
+     call timer1%set(150.0,150)!(ttotal,Nt)
      !分配空间
      call assm1%alloc()
+     call timer1%alloc()
      !初始化
      call assm1%init()
+     !    timer1%init(ttotal,Nt,ctime,ltime)
+     call timer1%init(0.0,0.0)
     end subroutine Sys_pre_process
 end module driving_pre_process

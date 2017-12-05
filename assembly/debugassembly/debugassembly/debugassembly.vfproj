@@ -27,7 +27,8 @@
 		<Filter Name="Header Files" Filter="fi;fd">
 		<File RelativePath=".\power_header.f90"/>
 		<File RelativePath=".\sys_assm_header.f90"/>
-		<File RelativePath=".\sys_property_header.f90"/></Filter>
+		<File RelativePath=".\sys_property_header.f90"/>
+		<File RelativePath=".\sys_timer.f90"/></Filter>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
 		<Filter Name="driving">

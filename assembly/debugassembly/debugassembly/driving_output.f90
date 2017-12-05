@@ -12,6 +12,16 @@ contains
       write(2,*) assm1%thermal%temperature
       !write(2,*) assm1%pow%power
       close(2) 
+      
+      open(3,file='E:\documents\doctors degree\software\tansistant\parallel\moduledebug\assembly\debugassembly\output\tout.txt')
+      write(3,*) timer1%tout
+      close(3) 
+      open(4,file='E:\documents\doctors degree\software\tansistant\parallel\moduledebug\assembly\debugassembly\output\tpow.txt')
+      write(4,*) timer1%pow
+      close(4) 
+      open(5,file='E:\documents\doctors degree\software\tansistant\parallel\moduledebug\assembly\debugassembly\output\tuin.txt')
+      write(5,*) timer1%uin
+      close(5)
 
       !print*,assm1%th_boundary%p%outlet
       !liquid PVT¡¢rho distribution
